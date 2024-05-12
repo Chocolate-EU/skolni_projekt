@@ -6,9 +6,9 @@ const char* serverName = "http://yourserver.com/upload.php"; // URL SERVERU
 adresu serveru
 const int motionSensorPin = 2; // HC-SR501
 volatile bool motionDetected = false;
-unsigned long startTime = 0;
-unsigned long endTime = 0;
-String dogName = "";
+unsigned long startTime = 0; // začátek stopování času
+unsigned long endTime = 0; // konec stoppování času
+String dogName = ""; // jméno psa
 void setup() {
 Serial.begin(115200);
 pinMode(motionSensorPin, INPUT);
@@ -18,21 +18,21 @@ connectToWiFi();
 void loop() {
 if (motionDetected) {
 startTime = millis();
-Serial.println("Motion detected!");
-Serial.print("Enter the dog's name: ");
+Serial.println("Pohyb zaznamenán");
+Serial.print("Jméno závodního psa: ");
 while (Serial.available() == 0) {
-// Wait for user input
+// počkání na uživatelem zadáné hodnoty 
 }
 dogName = Serial.readStringUntil('\n');
-Serial.print("Dog's name: ");
+Serial.print("Jméno psa: ");
 Serial.println(dogName);
-// Wait for motion to stop
+// čekání na konec pohybu
 while (digitalRead(motionSensorPin) == HIGH) {
-// Motion still detected
+// pohyb je stále detekován
 }
 endTime = millis();
-Serial.println("Motion stopped!");
-// Send data to server
+Serial.println("Pohyb ukončen");
+// poslání dat na server
 sendDataToServer();
 motionDetected = false;
 }
@@ -47,7 +47,7 @@ while (WiFi.status() != WL_CONNECTED) {
 delay(500);
 Serial.print(".");
 }
-Serial.println("WiFi connected!");
+Serial.println("WiFi připojena");
 }
 void sendDataToServer() {
 if (WiFi.status() == WL_CONNECTED) {
@@ -68,6 +68,6 @@ Serial.println(httpResponseCode);
 }
 http.end();
 } else {
-Serial.println("WiFi Disconnected");
+Serial.println("WiFi odpojena");
 }
 }
