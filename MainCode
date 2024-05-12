@@ -1,0 +1,73 @@
+#include <WiFi.h>
+#include <HTTPClient.h>
+const char* ssid = "YourWiFiSSID";
+const char* password = "YourWiFiPassword";
+const char* serverName = "http://yourserver.com/upload.php"; // URL SERVERU
+adresu serveru
+const int motionSensorPin = 2; // HC-SR501
+volatile bool motionDetected = false;
+unsigned long startTime = 0;
+unsigned long endTime = 0;
+String dogName = "";
+void setup() {
+Serial.begin(115200);
+pinMode(motionSensorPin, INPUT);
+attachInterrupt(digitalPinToInterrupt(motionSensorPin), motionDetectedISR, CHANGE);
+connectToWiFi();
+}
+void loop() {
+if (motionDetected) {
+startTime = millis();
+Serial.println("Motion detected!");
+Serial.print("Enter the dog's name: ");
+while (Serial.available() == 0) {
+// Wait for user input
+}
+dogName = Serial.readStringUntil('\n');
+Serial.print("Dog's name: ");
+Serial.println(dogName);
+// Wait for motion to stop
+while (digitalRead(motionSensorPin) == HIGH) {
+// Motion still detected
+}
+endTime = millis();
+Serial.println("Motion stopped!");
+// Send data to server
+sendDataToServer();
+motionDetected = false;
+}
+}
+void motionDetectedISR() {
+motionDetected = true;
+}
+void connectToWiFi() {
+Serial.print("Connecting to WiFi");
+WiFi.begin(ssid, password);
+while (WiFi.status() != WL_CONNECTED) {
+delay(500);
+Serial.print(".");
+}
+Serial.println("WiFi connected!");
+}
+void sendDataToServer() {
+if (WiFi.status() == WL_CONNECTED) {
+HTTPClient http;
+http.begin(serverName);
+http.addHeader("Content-Type", "application/x-www-form-urlencoded");
+String postData = "dog_name=" + dogName + "&start_time=" + String(startTime) +
+"&end_time=" + String(endTime);
+int httpResponseCode = http.POST(postData);
+if (httpResponseCode > 0) {
+Serial.print("HTTP Response code: ");
+Serial.println(httpResponseCode);
+String response = http.getString();
+Serial.println(response);
+} else {
+Serial.print("Error code: ");
+Serial.println(httpResponseCode);
+}
+http.end();
+} else {
+Serial.println("WiFi Disconnected");
+}
+}
